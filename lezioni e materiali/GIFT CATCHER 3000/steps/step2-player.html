@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 GIFT CATCHER 3000</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #05010d;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        .titolo {
+            text-align: center;
+            padding-top: 30px;
+            font-size: 3rem;
+            color: #05d9e8;
+            text-shadow: 
+                0 0 10px #05d9e8,
+                0 0 20px #05d9e8,
+                0 0 40px #05d9e8;
+        }
+
+        .griglia {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: 
+                linear-gradient(90deg, rgba(5, 217, 232, 0.1) 1px, transparent 1px),
+                linear-gradient(rgba(5, 217, 232, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom;
+            animation: movimento 2s linear infinite;
+        }
+
+        @keyframes movimento {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 50px; }
+        }
+
+        /* ========== NUOVO: IL PLAYER ========== */
+        .player {
+            position: fixed;
+            bottom: 30px;
+            width: 100px;
+            height: 70px;
+            background: linear-gradient(180deg, #d300c5 0%, #ff2a6d 100%);
+            border: 3px solid #05d9e8;
+            border-radius: 10px 10px 30px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            box-shadow: 
+                0 0 20px #d300c5,
+                0 0 40px #ff2a6d;
+            transform: translateX(-50%);
+        }
+
+        .istruzioni {
+            position: fixed;
+            bottom: 120px;
+            width: 100%;
+            text-align: center;
+            color: #05d9e8;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="titolo">🎁 GIFT CATCHER 🎁</h1>
+    
+    <div class="griglia"></div>
+
+    <!-- IL NOSTRO PLAYER -->
+    <div class="player" id="player">🛷</div>
+
+    <p class="istruzioni">← Muovi il mouse per spostare la slitta →</p>
+
+    <script>
+        // Prendiamo il player
+        var player = document.getElementById('player');
+        
+        // Quando muoviamo il mouse...
+        document.addEventListener('mousemove', function(evento) {
+            // Spostiamo il player dove c'è il mouse
+            player.style.left = evento.clientX + 'px';
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 GIFT CATCHER 3000</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #05010d;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Press Start 2P', Arial, sans-serif;
+        }
+
+        /* ========== SCHERMATA START ========== */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #05010d;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .start-screen.nascosta {
+            opacity: 0;
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 3rem;
+            color: #05d9e8;
+            text-shadow: 
+                0 0 10px #05d9e8,
+                0 0 20px #05d9e8,
+                0 0 40px #05d9e8,
+                0 0 80px #d300c5;
+            text-align: center;
+            line-height: 1.5;
+            animation: lampeggio 2s infinite alternate;
+        }
+
+        @keyframes lampeggio {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow: 
+                    0 0 10px #05d9e8,
+                    0 0 20px #05d9e8,
+                    0 0 40px #05d9e8,
+                    0 0 80px #d300c5;
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+
+        .sottotitolo {
+            color: #ff2a6d;
+            margin-top: 20px;
+            letter-spacing: 5px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .btn-start {
+            margin-top: 50px;
+            padding: 20px 50px;
+            font-family: 'Press Start 2P', Arial, sans-serif;
+            font-size: 1rem;
+            background: transparent;
+            border: 3px solid #ff2a6d;
+            color: #ff2a6d;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start:hover {
+            background: #ff2a6d;
+            color: #05010d;
+            box-shadow: 0 0 30px #ff2a6d;
+            transform: scale(1.05);
+        }
+
+        /* ========== HUD ========== */
+        .hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+        }
+
+        .punteggio {
+            font-size: 1rem;
+            color: #f9f002;
+            text-shadow: 0 0 10px #f9f002;
+        }
+
+        .punteggio span {
+            color: #05d9e8;
+        }
+
+        .livello {
+            font-size: 0.8rem;
+            color: #d300c5;
+            text-shadow: 0 0 10px #d300c5;
+        }
+
+        .vite {
+            font-size: 1.2rem;
+            filter: drop-shadow(0 0 5px #ff2a6d);
+        }
+
+        /* ========== GRIGLIA ========== */
+        .griglia {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: 
+                linear-gradient(90deg, rgba(5, 217, 232, 0.1) 1px, transparent 1px),
+                linear-gradient(rgba(5, 217, 232, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom;
+            animation: movimento 2s linear infinite;
+        }
+
+        @keyframes movimento {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 50px; }
+        }
+
+        /* ========== PLAYER ========== */
+        .player {
+            position: fixed;
+            bottom: 30px;
+            width: 100px;
+            height: 70px;
+            background: linear-gradient(180deg, #d300c5 0%, #ff2a6d 100%);
+            border: 3px solid #05d9e8;
+            border-radius: 10px 10px 30px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            box-shadow: 
+                0 0 20px #d300c5,
+                0 0 40px #ff2a6d;
+            transform: translateX(-50%);
+            z-index: 20;
+            transition: left 0.05s;
+        }
+
+        /* ========== OGGETTI ========== */
+        .oggetto {
+            position: fixed;
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 15px #05d9e8);
+            animation: dondolo 0.5s ease-in-out infinite alternate;
+            z-index: 10;
+        }
+
+        .oggetto.nemico {
+            filter: drop-shadow(0 0 15px #ff2a6d);
+        }
+
+        @keyframes dondolo {
+            0% { transform: rotate(-10deg); }
+            100% { transform: rotate(10deg); }
+        }
+
+        /* ========== POPUP PUNTI ========== */
+        .popup-punti {
+            position: fixed;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f9f002;
+            text-shadow: 0 0 10px #f9f002;
+            pointer-events: none;
+            animation: saliScompari 1s forwards;
+            z-index: 50;
+        }
+
+        .popup-punti.negativo {
+            color: #ff2a6d;
+            text-shadow: 0 0 10px #ff2a6d;
+        }
+
+        @keyframes saliScompari {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+        }
+
+        /* ========== COMBO ========== */
+        .combo {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #f9f002;
+            text-shadow: 0 0 20px #f9f002;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .combo.visibile {
+            animation: comboAnim 1s forwards;
+        }
+
+        @keyframes comboAnim {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+        }
+
+        /* ========== GAME OVER ========== */
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 1, 13, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .game-over.visibile {
+            display: flex;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .game-over h1 {
+            font-size: 3rem;
+            color: #ff2a6d;
+            text-shadow: 0 0 20px #ff2a6d, 0 0 40px #ff2a6d;
+            animation: tremolio 0.3s infinite;
+        }
+
+        @keyframes tremolio {
+            0%, 100% { transform: translate(0); }
+            25% { transform: translate(-2px, 2px); }
+            75% { transform: translate(2px, -2px); }
+        }
+
+        .game-over .finale {
+            font-size: 1.5rem;
+            color: #05d9e8;
+            margin-top: 30px;
+        }
+
+        .game-over .record {
+            font-size: 1rem;
+            color: #f9f002;
+            margin-top: 15px;
+        }
+
+        .game-over button {
+            margin-top: 40px;
+            padding: 15px 40px;
+            font-family: 'Press Start 2P', Arial, sans-serif;
+            font-size: 0.8rem;
+            background: #05d9e8;
+            border: none;
+            color: #05010d;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .game-over button:hover {
+            background: #f9f002;
+            box-shadow: 0 0 30px #f9f002;
+            transform: scale(1.1);
+        }
+
+        /* ========== PANNELLO PERSONALIZZAZIONE ========== */
+        .pannello-toggle {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background: #d300c5;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 150;
+            box-shadow: 0 0 15px #d300c5;
+            transition: all 0.3s;
+        }
+
+        .pannello-toggle:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .pannello {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: rgba(13, 2, 33, 0.95);
+            border: 2px solid #d300c5;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 140;
+            min-width: 220px;
+            box-shadow: 0 0 20px #d300c5;
+            transform: translateX(300px);
+            transition: transform 0.3s;
+        }
+
+        .pannello.aperto {
+            transform: translateX(0);
+        }
+
+        .pannello h3 {
+            font-size: 0.7rem;
+            color: #05d9e8;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .opzione {
+            margin-bottom: 12px;
+        }
+
+        .opzione label {
+            display: block;
+            font-size: 0.5rem;
+            color: #ff2a6d;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .opzione select {
+            width: 100%;
+            padding: 8px;
+            background: #05010d;
+            border: 1px solid #05d9e8;
+            color: #05d9e8;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* ========== SHAKE ========== */
+        .shake {
+            animation: shakeScreen 0.3s;
+        }
+
+        @keyframes shakeScreen {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+        }
+
+        /* ========== ISTRUZIONI ========== */
+        .istruzioni {
+            position: fixed;
+            bottom: 15px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.5rem;
+            color: #05d9e8;
+            opacity: 0.6;
+            z-index: 5;
+        }
+
+        /* ========== SCANLINES ========== */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.1) 0px,
+                rgba(0,0,0,0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+
+    <!-- SCHERMATA START -->
+    <div class="start-screen" id="startScreen">
+        <div class="logo">🎁 GIFT<br>CATCHER<br>3000 🎁</div>
+        <div class="sottotitolo">CHRISTMAS ARCADE</div>
+        <button class="btn-start" id="btnStart">▶ START</button>
+    </div>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="punteggio">SCORE: <span id="score">0</span></div>
+        <div class="livello">LVL <span id="livello">1</span></div>
+        <div class="vite" id="vite">❤️❤️❤️</div>
+    </div>
+
+    <div class="griglia"></div>
+    <div class="player" id="player">🛷</div>
+    <div class="combo" id="combo"></div>
+
+    <!-- GAME OVER -->
+    <div class="game-over" id="gameOver">
+        <h1>GAME OVER</h1>
+        <div class="finale">SCORE: <span id="punteggioFinale">0</span></div>
+        <div class="record">BEST: <span id="record">0</span></div>
+        <button onclick="riavvia()">🔄 RETRY</button>
+    </div>
+
+    <!-- PERSONALIZZAZIONE -->
+    <button class="pannello-toggle" id="pannelloToggle">⚙️</button>
+    <div class="pannello" id="pannello">
+        <h3>⚡ PERSONALIZZA ⚡</h3>
+        
+        <div class="opzione">
+            <label>🎁 REGALO</label>
+            <select id="emojiRegalo">
+                <option value="🎁">🎁 Regalo</option>
+                <option value="⭐">⭐ Stella</option>
+                <option value="🎄">🎄 Albero</option>
+                <option value="🍪">🍪 Biscotto</option>
+                <option value="🎅">🎅 Babbo Natale</option>
+                <option value="💎">💎 Diamante</option>
+                <option value="🍕">🍕 Pizza</option>
+                <option value="🎮">🎮 Controller</option>
+            </select>
+        </div>
+
+        <div class="opzione">
+            <label>💀 NEMICO</label>
+            <select id="emojiNemico">
+                <option value="🪨">🪨 Roccia</option>
+                <option value="💣">💣 Bomba</option>
+                <option value="👻">👻 Fantasma</option>
+                <option value="☠️">☠️ Teschio</option>
+                <option value="🧊">🧊 Ghiaccio</option>
+                <option value="🔥">🔥 Fuoco</option>
+            </select>
+        </div>
+
+        <div class="opzione">
+            <label>🎮 PLAYER</label>
+            <select id="emojiPlayer" onchange="cambiaPlayer()">
+                <option value="🛷">🛷 Slitta</option>
+                <option value="🧺">🧺 Cestino</option>
+                <option value="🛸">🛸 UFO</option>
+                <option value="🤖">🤖 Robot</option>
+                <option value="🐱">🐱 Gatto</option>
+                <option value="🦄">🦄 Unicorno</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="istruzioni">MUOVI IL MOUSE ← → | PRENDI 🎁 EVITA 🪨</div>
+
+    <script>
+        // ============ ELEMENTI ============
+        var startScreen = document.getElementById('startScreen');
+        var btnStart = document.getElementById('btnStart');
+        var player = document.getElementById('player');
+        var scoreEl = document.getElementById('score');
+        var livelloEl = document.getElementById('livello');
+        var viteEl = document.getElementById('vite');
+        var gameOverScreen = document.getElementById('gameOver');
+        var punteggioFinaleEl = document.getElementById('punteggioFinale');
+        var recordEl = document.getElementById('record');
+        var comboEl = document.getElementById('combo');
+        var pannelloToggle = document.getElementById('pannelloToggle');
+        var pannello = document.getElementById('pannello');
+        var emojiRegalo = document.getElementById('emojiRegalo');
+        var emojiNemico = document.getElementById('emojiNemico');
+        var emojiPlayer = document.getElementById('emojiPlayer');
+
+        // ============ VARIABILI ============
+        var punteggio = 0;
+        var vite = 3;
+        var livello = 1;
+        var combo = 0;
+        var record = localStorage.getItem('giftCatcherRecord') || 0;
+        var giocoAttivo = false;
+        var intervalloSpawn;
+
+        recordEl.textContent = record;
+
+        // ============ CONTROLLI ============
+        document.addEventListener('mousemove', function(e) {
+            if (giocoAttivo) {
+                player.style.left = e.clientX + 'px';
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (!giocoAttivo) return;
+            var pos = parseFloat(player.style.left) || window.innerWidth / 2;
+            if (e.key === 'ArrowLeft') {
+                player.style.left = Math.max(50, pos - 30) + 'px';
+            } else if (e.key === 'ArrowRight') {
+                player.style.left = Math.min(window.innerWidth - 50, pos + 30) + 'px';
+            }
+        });
+
+        // ============ PANNELLO ============
+        pannelloToggle.addEventListener('click', function() {
+            pannello.classList.toggle('aperto');
+        });
+
+        function cambiaPlayer() {
+            player.textContent = emojiPlayer.value;
+        }
+
+        // ============ GIOCO ============
+        btnStart.addEventListener('click', iniziaGioco);
+
+        function iniziaGioco() {
+            startScreen.classList.add('nascosta');
+            punteggio = 0;
+            vite = 3;
+            livello = 1;
+            combo = 0;
+            giocoAttivo = true;
+            
+            scoreEl.textContent = '0';
+            livelloEl.textContent = '1';
+            aggiornaVite();
+            
+            player.style.left = window.innerWidth / 2 + 'px';
+            player.textContent = emojiPlayer.value;
+            
+            intervalloSpawn = setInterval(creaOggetto, 1000);
+        }
+
+        function creaOggetto() {
+            if (!giocoAttivo) return;
+            
+            var oggetto = document.createElement('div');
+            oggetto.className = 'oggetto';
+            
+            var eNemico = Math.random() < 0.2;
+            
+            if (eNemico) {
+                oggetto.textContent = emojiNemico.value;
+                oggetto.classList.add('nemico');
+                oggetto.dataset.nemico = 'true';
+            } else {
+                oggetto.textContent = emojiRegalo.value;
+                oggetto.dataset.nemico = 'false';
+            }
+            
+            oggetto.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+            oggetto.style.top = '-50px';
+            
+            document.body.appendChild(oggetto);
+            
+            var velocita = 4 + livello * 0.5 + Math.random() * 2;
+            
+            var caduta = setInterval(function() {
+                if (!giocoAttivo) {
+                    oggetto.remove();
+                    clearInterval(caduta);
+                    return;
+                }
+                
+                var posY = parseFloat(oggetto.style.top);
+                oggetto.style.top = posY + velocita + 'px';
+                
+                var oRect = oggetto.getBoundingClientRect();
+                var pRect = player.getBoundingClientRect();
+                
+                if (oRect.bottom >= pRect.top &&
+                    oRect.top <= pRect.bottom &&
+                    oRect.right >= pRect.left &&
+                    oRect.left <= pRect.right) {
+                    
+                    if (oggetto.dataset.nemico === 'true') {
+                        vite--;
+                        combo = 0;
+                        aggiornaVite();
+                        mostraPopup(oRect.left, oRect.top, '💔', true);
+                        
+                        document.body.classList.add('shake');
+                        setTimeout(function() {
+                            document.body.classList.remove('shake');
+                        }, 300);
+                        
+                        if (vite <= 0) {
+                            gameOver();
+                        }
+                    } else {
+                        combo++;
+                        var punti = 10 * Math.min(combo, 5);
+                        punteggio += punti;
+                        scoreEl.textContent = punteggio;
+                        mostraPopup(oRect.left, oRect.top, '+' + punti, false);
+                        
+                        if (combo > 0 && combo % 5 === 0) {
+                            mostraCombo(combo);
+                        }
+                        
+                        // Level up
+                        if (punteggio >= livello * 150) {
+                            livello++;
+                            livelloEl.textContent = livello;
+                            clearInterval(intervalloSpawn);
+                            intervalloSpawn = setInterval(creaOggetto, Math.max(400, 1000 - livello * 80));
+                        }
+                    }
+                    
+                    oggetto.remove();
+                    clearInterval(caduta);
+                }
+                
+                if (posY > window.innerHeight) {
+                    oggetto.remove();
+                    clearInterval(caduta);
+                }
+            }, 20);
+        }
+
+        function mostraPopup(x, y, testo, negativo) {
+            var popup = document.createElement('div');
+            popup.className = 'popup-punti';
+            if (negativo) popup.classList.add('negativo');
+            popup.textContent = testo;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.body.appendChild(popup);
+            setTimeout(function() { popup.remove(); }, 1000);
+        }
+
+        function mostraCombo(n) {
+            comboEl.textContent = '🔥 ' + n + 'x COMBO! 🔥';
+            comboEl.classList.remove('visibile');
+            void comboEl.offsetWidth;
+            comboEl.classList.add('visibile');
+        }
+
+        function aggiornaVite() {
+            var cuori = '';
+            for (var i = 0; i < vite; i++) cuori += '❤️';
+            for (var i = 0; i < 3 - vite; i++) cuori += '🖤';
+            viteEl.textContent = cuori;
+        }
+
+        function gameOver() {
+            giocoAttivo = false;
+            clearInterval(intervalloSpawn);
+            
+            if (punteggio > record) {
+                record = punteggio;
+                localStorage.setItem('giftCatcherRecord', record);
+            }
+            
+            punteggioFinaleEl.textContent = punteggio;
+            recordEl.textContent = record;
+            gameOverScreen.classList.add('visibile');
+            
+            document.querySelectorAll('.oggetto').forEach(function(o) { o.remove(); });
+        }
+
+        function riavvia() {
+            gameOverScreen.classList.remove('visibile');
+            iniziaGioco();
+        }
+
+        // Posizione iniziale
+        player.style.left = window.innerWidth / 2 + 'px';
+    </script>
+
+</body>
+</html>

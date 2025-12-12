@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 GIFT CATCHER 3000</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #05010d;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ========== NUOVO: PUNTEGGIO ========== */
+        .punteggio {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 2rem;
+            color: #f9f002;
+            text-shadow: 0 0 10px #f9f002;
+            z-index: 100;
+        }
+
+        .titolo {
+            text-align: center;
+            padding-top: 30px;
+            font-size: 3rem;
+            color: #05d9e8;
+            text-shadow: 
+                0 0 10px #05d9e8,
+                0 0 20px #05d9e8,
+                0 0 40px #05d9e8;
+            position: relative;
+            z-index: 10;
+        }
+
+        .griglia {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: 
+                linear-gradient(90deg, rgba(5, 217, 232, 0.1) 1px, transparent 1px),
+                linear-gradient(rgba(5, 217, 232, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom;
+            animation: movimento 2s linear infinite;
+        }
+
+        @keyframes movimento {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 50px; }
+        }
+
+        .player {
+            position: fixed;
+            bottom: 30px;
+            width: 100px;
+            height: 70px;
+            background: linear-gradient(180deg, #d300c5 0%, #ff2a6d 100%);
+            border: 3px solid #05d9e8;
+            border-radius: 10px 10px 30px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            box-shadow: 
+                0 0 20px #d300c5,
+                0 0 40px #ff2a6d;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+
+        .regalo {
+            position: fixed;
+            font-size: 3rem;
+            filter: drop-shadow(0 0 20px #05d9e8);
+            animation: dondolo 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes dondolo {
+            0% { transform: rotate(-10deg); }
+            100% { transform: rotate(10deg); }
+        }
+
+        /* ========== NUOVO: POPUP PUNTI ========== */
+        .popup-punti {
+            position: fixed;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f9f002;
+            text-shadow: 0 0 10px #f9f002;
+            pointer-events: none;
+            animation: saliScompari 1s forwards;
+            z-index: 50;
+        }
+
+        @keyframes saliScompari {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PUNTEGGIO -->
+    <div class="punteggio">SCORE: <span id="score">0</span></div>
+
+    <h1 class="titolo">🎁 GIFT CATCHER 🎁</h1>
+    
+    <div class="griglia"></div>
+    <div class="player" id="player">🛷</div>
+
+    <script>
+        var player = document.getElementById('player');
+        var scoreElement = document.getElementById('score');
+        var punteggio = 0;
+        var playerX = window.innerWidth / 2;
+        
+        // Movimento player
+        document.addEventListener('mousemove', function(evento) {
+            playerX = evento.clientX;
+            player.style.left = playerX + 'px';
+        });
+
+        function creaRegalo() {
+            var regalo = document.createElement('div');
+            regalo.className = 'regalo';
+            regalo.textContent = '🎁';
+            
+            var regaloX = Math.random() * (window.innerWidth - 50);
+            regalo.style.left = regaloX + 'px';
+            regalo.style.top = '-50px';
+            
+            document.body.appendChild(regalo);
+            
+            var velocita = 3 + Math.random() * 4;
+            
+            var caduta = setInterval(function() {
+                var regaloY = parseFloat(regalo.style.top);
+                regalo.style.top = regaloY + velocita + 'px';
+                
+                // ========== NUOVO: CONTROLLO COLLISIONE ==========
+                // Posizione del regalo
+                var regaloRect = regalo.getBoundingClientRect();
+                // Posizione del player
+                var playerRect = player.getBoundingClientRect();
+                
+                // Se il regalo tocca il player...
+                if (regaloRect.bottom >= playerRect.top &&
+                    regaloRect.top <= playerRect.bottom &&
+                    regaloRect.right >= playerRect.left &&
+                    regaloRect.left <= playerRect.right) {
+                    
+                    // Aggiungiamo punti!
+                    punteggio = punteggio + 10;
+                    scoreElement.textContent = punteggio;
+                    
+                    // Mostriamo il popup
+                    mostraPopup(regaloRect.left, regaloRect.top, '+10');
+                    
+                    // Rimuoviamo il regalo
+                    regalo.remove();
+                    clearInterval(caduta);
+                }
+                
+                // Se è uscito dallo schermo
+                if (regaloY > window.innerHeight) {
+                    regalo.remove();
+                    clearInterval(caduta);
+                }
+            }, 20);
+        }
+
+        // ========== NUOVO: FUNZIONE POPUP PUNTI ==========
+        function mostraPopup(x, y, testo) {
+            var popup = document.createElement('div');
+            popup.className = 'popup-punti';
+            popup.textContent = testo;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.body.appendChild(popup);
+            
+            // Rimuovi dopo l'animazione
+            setTimeout(function() {
+                popup.remove();
+            }, 1000);
+        }
+
+        setInterval(creaRegalo, 1000);
+        
+        // Posizioniamo il player al centro
+        player.style.left = window.innerWidth / 2 + 'px';
+    </script>
+
+</body>
+</html>

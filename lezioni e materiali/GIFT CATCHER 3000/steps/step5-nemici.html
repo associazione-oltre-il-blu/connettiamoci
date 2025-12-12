@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>🎮 GIFT CATCHER 3000</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #05010d;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        /* HUD - Punteggio e Vite */
+        .hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 100;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+
+        .punteggio {
+            font-size: 1.5rem;
+            color: #f9f002;
+            text-shadow: 0 0 10px #f9f002;
+        }
+
+        .vite {
+            font-size: 1.5rem;
+        }
+
+        .titolo {
+            text-align: center;
+            padding-top: 80px;
+            font-size: 2.5rem;
+            color: #05d9e8;
+            text-shadow: 
+                0 0 10px #05d9e8,
+                0 0 20px #05d9e8,
+                0 0 40px #05d9e8;
+            position: relative;
+            z-index: 10;
+        }
+
+        .griglia {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: 
+                linear-gradient(90deg, rgba(5, 217, 232, 0.1) 1px, transparent 1px),
+                linear-gradient(rgba(5, 217, 232, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom;
+            animation: movimento 2s linear infinite;
+        }
+
+        @keyframes movimento {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 50px; }
+        }
+
+        .player {
+            position: fixed;
+            bottom: 30px;
+            width: 100px;
+            height: 70px;
+            background: linear-gradient(180deg, #d300c5 0%, #ff2a6d 100%);
+            border: 3px solid #05d9e8;
+            border-radius: 10px 10px 30px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            box-shadow: 
+                0 0 20px #d300c5,
+                0 0 40px #ff2a6d;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+
+        .oggetto {
+            position: fixed;
+            font-size: 3rem;
+            filter: drop-shadow(0 0 20px #05d9e8);
+            animation: dondolo 0.5s ease-in-out infinite alternate;
+        }
+
+        /* ========== NUOVO: STILE NEMICI ========== */
+        .oggetto.nemico {
+            filter: drop-shadow(0 0 20px #ff2a6d);
+        }
+
+        @keyframes dondolo {
+            0% { transform: rotate(-10deg); }
+            100% { transform: rotate(10deg); }
+        }
+
+        .popup-punti {
+            position: fixed;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f9f002;
+            text-shadow: 0 0 10px #f9f002;
+            pointer-events: none;
+            animation: saliScompari 1s forwards;
+            z-index: 50;
+        }
+
+        .popup-punti.negativo {
+            color: #ff2a6d;
+            text-shadow: 0 0 10px #ff2a6d;
+        }
+
+        @keyframes saliScompari {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+        }
+
+        /* ========== NUOVO: GAME OVER ========== */
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .game-over.visibile {
+            display: flex;
+        }
+
+        .game-over h1 {
+            font-size: 4rem;
+            color: #ff2a6d;
+            text-shadow: 0 0 20px #ff2a6d, 0 0 40px #ff2a6d;
+            animation: tremolio 0.5s infinite;
+        }
+
+        @keyframes tremolio {
+            0%, 100% { transform: translate(0); }
+            25% { transform: translate(-3px, 3px); }
+            50% { transform: translate(3px, -3px); }
+            75% { transform: translate(-3px, -3px); }
+        }
+
+        .game-over .finale {
+            font-size: 2rem;
+            color: #05d9e8;
+            margin-top: 20px;
+        }
+
+        .game-over button {
+            margin-top: 40px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: #05d9e8;
+            border: none;
+            color: #05010d;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .game-over button:hover {
+            background: #f9f002;
+            box-shadow: 0 0 30px #f9f002;
+        }
+
+        /* EFFETTO SHAKE SCHERMO */
+        .shake {
+            animation: shakeScreen 0.3s;
+        }
+
+        @keyframes shakeScreen {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="punteggio">SCORE: <span id="score">0</span></div>
+        <div class="vite" id="vite">❤️❤️❤️</div>
+    </div>
+
+    <h1 class="titolo">🎁 GIFT CATCHER 🎁</h1>
+    
+    <div class="griglia"></div>
+    <div class="player" id="player">🛷</div>
+
+    <!-- GAME OVER SCREEN -->
+    <div class="game-over" id="gameOver">
+        <h1>GAME OVER</h1>
+        <div class="finale">PUNTEGGIO: <span id="punteggioFinale">0</span></div>
+        <button onclick="riavvia()">🔄 RIPROVA</button>
+    </div>
+
+    <script>
+        var player = document.getElementById('player');
+        var scoreElement = document.getElementById('score');
+        var viteElement = document.getElementById('vite');
+        var gameOverScreen = document.getElementById('gameOver');
+        var punteggioFinale = document.getElementById('punteggioFinale');
+        
+        var punteggio = 0;
+        var vite = 3;
+        var giocoAttivo = true;
+        var intervalloSpawn;
+        
+        // Movimento player
+        document.addEventListener('mousemove', function(evento) {
+            if (giocoAttivo) {
+                player.style.left = evento.clientX + 'px';
+            }
+        });
+
+        function creaOggetto() {
+            if (!giocoAttivo) return;
+            
+            var oggetto = document.createElement('div');
+            oggetto.className = 'oggetto';
+            
+            // 25% di probabilità che sia un nemico
+            var eNemico = Math.random() < 0.25;
+            
+            if (eNemico) {
+                oggetto.textContent = '🪨';  // Carbone/roccia
+                oggetto.classList.add('nemico');
+                oggetto.dataset.nemico = 'true';
+            } else {
+                oggetto.textContent = '🎁';
+                oggetto.dataset.nemico = 'false';
+            }
+            
+            oggetto.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+            oggetto.style.top = '-50px';
+            
+            document.body.appendChild(oggetto);
+            
+            var velocita = 4 + Math.random() * 3;
+            
+            var caduta = setInterval(function() {
+                if (!giocoAttivo) {
+                    oggetto.remove();
+                    clearInterval(caduta);
+                    return;
+                }
+                
+                var posY = parseFloat(oggetto.style.top);
+                oggetto.style.top = posY + velocita + 'px';
+                
+                // Collisione
+                var oggettoRect = oggetto.getBoundingClientRect();
+                var playerRect = player.getBoundingClientRect();
+                
+                if (oggettoRect.bottom >= playerRect.top &&
+                    oggettoRect.top <= playerRect.bottom &&
+                    oggettoRect.right >= playerRect.left &&
+                    oggettoRect.left <= playerRect.right) {
+                    
+                    if (oggetto.dataset.nemico === 'true') {
+                        // COLPITO DA NEMICO!
+                        vite--;
+                        aggiornaVite();
+                        mostraPopup(oggettoRect.left, oggettoRect.top, '-💔', true);
+                        
+                        // Shake dello schermo
+                        document.body.classList.add('shake');
+                        setTimeout(function() {
+                            document.body.classList.remove('shake');
+                        }, 300);
+                        
+                        // Game Over?
+                        if (vite <= 0) {
+                            gameOver();
+                        }
+                    } else {
+                        // PRESO REGALO!
+                        punteggio += 10;
+                        scoreElement.textContent = punteggio;
+                        mostraPopup(oggettoRect.left, oggettoRect.top, '+10', false);
+                    }
+                    
+                    oggetto.remove();
+                    clearInterval(caduta);
+                }
+                
+                if (posY > window.innerHeight) {
+                    oggetto.remove();
+                    clearInterval(caduta);
+                }
+            }, 20);
+        }
+
+        function mostraPopup(x, y, testo, negativo) {
+            var popup = document.createElement('div');
+            popup.className = 'popup-punti';
+            if (negativo) popup.classList.add('negativo');
+            popup.textContent = testo;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.body.appendChild(popup);
+            
+            setTimeout(function() {
+                popup.remove();
+            }, 1000);
+        }
+
+        function aggiornaVite() {
+            var cuori = '';
+            for (var i = 0; i < vite; i++) {
+                cuori += '❤️';
+            }
+            for (var i = 0; i < 3 - vite; i++) {
+                cuori += '🖤';
+            }
+            viteElement.textContent = cuori;
+        }
+
+        function gameOver() {
+            giocoAttivo = false;
+            clearInterval(intervalloSpawn);
+            punteggioFinale.textContent = punteggio;
+            gameOverScreen.classList.add('visibile');
+        }
+
+        function riavvia() {
+            // Reset
+            punteggio = 0;
+            vite = 3;
+            giocoAttivo = true;
+            scoreElement.textContent = '0';
+            aggiornaVite();
+            gameOverScreen.classList.remove('visibile');
+            
+            // Rimuovi oggetti rimasti
+            document.querySelectorAll('.oggetto').forEach(function(o) {
+                o.remove();
+            });
+            
+            // Ricomincia spawn
+            intervalloSpawn = setInterval(creaOggetto, 800);
+        }
+
+        // Inizia il gioco
+        player.style.left = window.innerWidth / 2 + 'px';
+        intervalloSpawn = setInterval(creaOggetto, 800);
+    </script>
+
+</body>
+</html>
